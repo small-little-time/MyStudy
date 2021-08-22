@@ -1,5 +1,6 @@
-package com.zhangyi.strategy;
+package com.zhangyi.strategy.strategy;
 
+import com.zhangyi.strategy.ParkStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class DefaultParkStrategy implements ParkStrategy{
+public class DefaultParkStrategy implements ParkStrategy {
     @Override
     public int calcDistance(int count) {
         log.info("默认公园");
