@@ -1,6 +1,5 @@
-package com.zhuanzhuan.tradetraceplat.traceplat.queryproxy.core;
+package com.zhangyi.se;
 
-import com.zhuanzhuan.tradetraceplat.traceplat.queryproxy.entity.InvokeResult;
 import lombok.Data;
 
 /**
@@ -10,7 +9,6 @@ import lombok.Data;
 @Data
 public class ConvertResult<T> {
 
-    private InvokeResult invokeResult;
 
     private T convertResult;
 

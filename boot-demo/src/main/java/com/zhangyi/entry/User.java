@@ -1,7 +1,5 @@
 package com.zhangyi.entry;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -25,13 +23,12 @@ public class User {
     /**
      * 密码
      */
-    public String password;
+    private String password;
 
-    /**年龄*/
-    public Long age;
+    /**
+     * 年龄
+     */
+    private Long age;
 
-    public Map<String, Long> convert2Map() {
-        Type type = new TypeToken<Map<String, Long>>() {}.getType();
-        return JSONObject.parseObject(JSONObject.toJSONString(this), type);
-    }
+
 }
