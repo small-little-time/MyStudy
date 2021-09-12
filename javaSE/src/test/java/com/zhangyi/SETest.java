@@ -297,10 +297,15 @@ public class SETest {
         Object o = JSON.parse((String) data);
         System.out.println(o);
         System.out.println(o instanceof JSONArray);
+        List<Map<String, Object>> listObjectSec = JSONArray.parseObject(JSON.toJSONString(o), List.class);
+        for (Map<String, Object> stringObjectMap : listObjectSec) {
+            System.out.println(stringObjectMap.get("paramId"));
+        }
     }
 
     @Test
     public void test16() {
+//        String path = "/data/*/zzProductExt";
         String path = "/zzProductExt/params/*/paramId";
         Splitter SPLITTER = Splitter.on("/");
         List<String> stringList = SPLITTER.splitToList(path);
@@ -322,6 +327,15 @@ public class SETest {
                     System.out.println("空");
                 }
             }
+        }
+//        System.out.println(dataLiST instanceof String);
+//        if (dataLiST instanceof String){
+//            List<Map<String, Object>> parse = (List<Map<String, Object>>) JSON.parse((String) dataLiST);
+//            System.out.println(parse);
+//        }
+        List<Map<String, Object>> listObjectSec = dataLiST instanceof String ? (List<Map<String, Object>>) JSON.parse((String) dataLiST) : JSONArray.parseObject(JSON.toJSONString(dataLiST), List.class);
+        for (Map<String, Object> stringObjectMap : listObjectSec) {
+            System.out.println(stringObjectMap.get("paramId"));
         }
         System.out.println(dataLiST);
     }
