@@ -4,11 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONPath;
-import com.google.common.collect.Lists;
+import com.google.common.base.Splitter;
 import com.zhangyi.entry.*;
 import com.zhangyi.se.Execute;
 import com.zhangyi.se.SerializedLambda;
-import com.zhangyi.se.ZzSupplier;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -186,4 +185,277 @@ public class SETest {
         System.out.println(parse);
         System.out.println(parse instanceof JSONObject);
     }
+
+    @Test
+    public void test11() {
+        String a = "{    \"zzProductExt\":{\n" +
+                "        \"brandId\":\"0\",\n" +
+                "        \"brandIdNew\":10530,\n" +
+                "        \"cateTemplateId\":7373,\n" +
+                "        \"extraInfo\":\"{\\\"shortTitle\\\":\\\"苹果 暗夜绿色\\\"}\",\n" +
+                "        \"modelId\":2192,\n" +
+                "        \"params\":\"[{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"720002\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"paramsNew\":\"[{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"1080628\\\"},{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"productId\":\"1429029620453966849\",\n" +
+                "        \"services\":\"[{\\\"serviceId\\\":\\\"40\\\"}]\"\n" +
+                "    }\n" +
+                "}";
+        Object oa = JSON.parse(a);
+        Map<String, Object> oas = JSONPath.paths(oa);
+        String b = "{\n" +
+                "    \"school\":{\n" +
+                "        \"class\":{\n" +
+                "            \"student\":{\n" +
+                "                \"studentName\":\"s-Name\",\n" +
+                "                \"studentAge\":\"s-age\"\n" +
+                "            },\n" +
+                "            \"className\":\"c-Name\"\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        Object ob = JSON.parse(b);
+        Map<String, Object> obs = JSONPath.paths(ob);
+        System.out.println("1");
+    }
+
+    @Test
+    public void test12() {
+        Map<String, Object> data = getDataMap();
+        String filterPath = "/data/0/zzProductExt/params";
+        Object filterData = data.get(filterPath);
+        if (Objects.isNull(filterData)) {
+            throw new RuntimeException("暂时不支持ext和list多层嵌套解析，请选择它的上层对象路径");
+        } else if (filterData instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) filterData;
+            System.out.println("====object=====");
+            System.out.println(jsonObject);
+        } else if (filterData instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray) filterData;
+            System.out.println("====array=====");
+            System.out.println(jsonArray);
+        } else if ((filterData instanceof String) && JSON.parse((String) filterData) instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) JSON.parse((String) filterData);
+            System.out.println("====filter object=====");
+            System.out.println(jsonObject);
+        } else if ((filterData instanceof String) && JSON.parse((String) filterData) instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray) JSON.parse((String) filterData);
+            System.out.println("====filter array=====");
+            System.out.println(jsonArray);
+        } else {
+            System.out.println("string");
+        }
+
+    }
+
+
+    @Test
+    public void test13() {
+        Map<String, Object> data = getDataMap();
+        String itemValue = "/data/0/zzProductExt/extraInfo/shortTitle";
+        Integer itemValueType = 1;
+        if (Objects.nonNull(itemValueType) && data.get(itemValue) == null) {
+            int i = itemValue.lastIndexOf("/");
+            String s = itemValue.substring(0, i);
+            System.out.println(s);
+            System.out.println(data.get(s));
+            Object parse = JSON.parse((String) data.get(s));
+            Map<String, Object> paths = JSONPath.paths(parse);
+            Object o = paths.get(itemValue.substring(i));
+            System.out.println(o);
+        } else {
+            data.get(itemValue);
+        }
+
+    }
+
+
+    @Test
+    public void test14() {
+        String path = "/data/*";
+        Splitter SPLITTER = Splitter.on("/");
+        List<String> strings = SPLITTER.splitToList(path);
+        System.out.println(strings);
+        String json = JSON.toJSONString(getObject());
+        String targetpath = getTargetPath(strings);
+        Object data = JSONPath.read(json, targetpath);
+        System.out.println(data);
+    }
+
+
+    @Test
+    public void test15() {
+        String path = "/data/0/zzProductExt/params/*/paramId";
+        Splitter SPLITTER = Splitter.on("/");
+        List<String> strings = SPLITTER.splitToList(path);
+        System.out.println(strings);
+        String json = JSON.toJSONString(getDataObj());
+        String targetpath = getTargetPath(strings);
+        Object data = JSONPath.read(json, targetpath);
+        System.out.println(data instanceof String);
+        System.out.println(data);
+        assert data instanceof String;
+        Object o = JSON.parse((String) data);
+        System.out.println(o);
+        System.out.println(o instanceof JSONArray);
+    }
+
+    @Test
+    public void test16() {
+        String path = "/zzProductExt/params/*/paramId";
+        Splitter SPLITTER = Splitter.on("/");
+        List<String> stringList = SPLITTER.splitToList(path);
+        int index = 0;
+        for (String str : stringList) {
+            if ("*".equals(str)) {
+                break;
+            }
+            index++;
+        }
+        Object dataLiST = null;
+        JSONObject jsonObject = JSONObject.parseObject(JSON.toJSONString(getDataObj2()));
+        for (int i = 1; i < index; i++) {
+            if (i == index - 1) {
+                dataLiST = jsonObject.get(stringList.get(i));
+            } else {
+                jsonObject = (JSONObject) jsonObject.get(stringList.get(i));
+                if (Objects.isNull(jsonObject)) {
+                    System.out.println("空");
+                }
+            }
+        }
+        System.out.println(dataLiST);
+    }
+
+
+    private String getTargetPath(List<String> nodeList) {
+
+        StringBuilder builder = new StringBuilder();
+
+        for (String node : nodeList) {
+            if (node.equals("*")) {
+                return builder.substring(1);
+            }
+            builder.append("/").append(node);
+        }
+        return builder.substring(1);
+    }
+
+    private Map<String, Object> getDataMap() {
+        String a = "{\n" +
+                "\"success\": \"ture\",\n" +
+                "\"data\":[{    \n" +
+                "\"msgOne\":\"111\",\n" +
+                "\"msgTow\":\"222\",\n" +
+                "\"zzProductExt\":{\n" +
+                "        \"brandId\":\"0\",\n" +
+                "        \"brandIdNew\":10530,\n" +
+                "        \"cateTemplateId\":7373,\n" +
+                "        \"extraInfo\":\"{\\\"shortTitle\\\":\\\"苹果 暗夜绿色\\\"}\",\n" +
+                "        \"modelId\":2192,\n" +
+                "        \"params\":\"[{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"720002\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"paramsNew\":\"[{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"1080628\\\"},{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"productId\":\"1429029620453966849\",\n" +
+                "        \"services\":\"[{\\\"serviceId\\\":\\\"40\\\"}]\"\n" +
+                "    }\n" +
+                "}]\n" +
+                "\n" +
+                "}";
+        Object oa = JSON.parse(a);
+        Map<String, Object> oas = JSONPath.paths(oa);
+        return oas;
+    }
+
+    private Object getDataObj() {
+        String a = "{\n" +
+                "\"success\": \"ture\",\n" +
+                "\"data\":[{    \n" +
+                "\"msgOne\":\"111\",\n" +
+                "\"msgTow\":\"222\",\n" +
+                "\"zzProductExt\":{\n" +
+                "        \"brandId\":\"0\",\n" +
+                "        \"brandIdNew\":10530,\n" +
+                "        \"cateTemplateId\":7373,\n" +
+                "        \"extraInfo\":\"{\\\"shortTitle\\\":\\\"苹果 暗夜绿色\\\"}\",\n" +
+                "        \"modelId\":2192,\n" +
+                "        \"params\":\"[{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"720002\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"paramsNew\":\"[{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"1080628\\\"},{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"productId\":\"1429029620453966849\",\n" +
+                "        \"services\":\"[{\\\"serviceId\\\":\\\"40\\\"}]\"\n" +
+                "    }\n" +
+                "}]\n" +
+                "\n" +
+                "}";
+        Object oa = JSON.parse(a);
+        return oa;
+    }
+
+
+    private Object getDataObj2() {
+        String a = "{\n" +
+                "\"success\": \"ture\",\n" +
+                "\"data\":[{    \n" +
+                "\"msgOne\":\"111\",\n" +
+                "\"msgTow\":\"222\",\n" +
+                "\"zzProductExt\":{\n" +
+                "        \"brandId\":\"0\",\n" +
+                "        \"brandIdNew\":10530,\n" +
+                "        \"cateTemplateId\":7373,\n" +
+                "        \"extraInfo\":\"{\\\"shortTitle\\\":\\\"苹果 暗夜绿色\\\"}\",\n" +
+                "        \"modelId\":2192,\n" +
+                "        \"params\":\"[{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"720002\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"paramsNew\":\"[{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"1080628\\\"},{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"productId\":\"1429029620453966849\",\n" +
+                "        \"services\":\"[{\\\"serviceId\\\":\\\"40\\\"}]\"\n" +
+                "    }\n" +
+                "}],\n" +
+                "\"zzProductExt\":{\n" +
+                "        \"brandId\":\"0\",\n" +
+                "        \"brandIdNew\":10530,\n" +
+                "        \"cateTemplateId\":7373,\n" +
+                "        \"extraInfo\":\"{\\\"shortTitle\\\":\\\"苹果 暗夜绿色\\\"}\",\n" +
+                "        \"modelId\":2192,\n" +
+                "        \"params\":\"[{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"720002\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"paramsNew\":\"[{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"1080628\\\"},{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "        \"productId\":\"1429029620453966849\",\n" +
+                "        \"services\":\"[{\\\"serviceId\\\":\\\"40\\\"}]\"\n" +
+                "    }\n" +
+                "\n" +
+                "}";
+        return JSON.parse(a);
+    }
+
+    private Object getObject() {
+        String a = "{\n" +
+                "    \"data\": [\n" +
+                "        {\n" +
+                "            \"msgOne\": \"111\",\n" +
+                "            \"zzProductExt\": {\n" +
+                "                \"brandIdNew\": 10530,\n" +
+                "                \"productId\": \"1429029620453966849\",\n" +
+                "                \"modelId\": 2192,\n" +
+                "                \"brandId\": \"0\",\n" +
+                "                \"cateTemplateId\": 7373,\n" +
+                "                \"services\": \"[{\\\"serviceId\\\":\\\"40\\\"}]\",\n" +
+                "                \"params\": \"[{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"720002\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "                \"paramsNew\": \"[{\\\"paramId\\\":6652,\\\"valueId\\\":\\\"1080628\\\"},{\\\"paramId\\\":5587,\\\"valueId\\\":\\\"1084995\\\"},{\\\"paramId\\\":7191,\\\"valueId\\\":\\\"1093559\\\"},{\\\"paramId\\\":7300,\\\"valueId\\\":\\\"213899751\\\"},{\\\"paramId\\\":6977,\\\"valueId\\\":\\\"1080626\\\"},{\\\"paramId\\\":6651,\\\"valueId\\\":\\\"511434\\\"}]\",\n" +
+                "                \"extraInfo\": \"{\\\"shortTitle\\\":\\\"苹果 暗夜绿色\\\"}\"\n" +
+                "            },\n" +
+                "            \"msgTow\": \"222\",\n" +
+                "            \"data\":[{\n" +
+                "            \t\"msgOne\": \"111\",\n" +
+                "            \t\"msgTow\": \"222\"\n" +
+                "            },\n" +
+                "            \t\t{\n" +
+                "            \t\"msgOne\": \"111\",\n" +
+                "            \t\"msgTow\": \"222\"\n" +
+                "            }\n" +
+                "            ]\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"success\": \"ture\"\n" +
+                "}";
+        return JSON.parse(a);
+    }
+
+
 }
