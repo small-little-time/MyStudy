@@ -29,6 +29,7 @@ public class SETest {
         System.out.println("" + addr.getHostAddress());
         String s = "" + addr.getHostAddress();
         System.out.println(s);
+        System.out.println(s);
     }
 
     @Test
